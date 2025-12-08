@@ -144,7 +144,7 @@ const KPIDetailModal: React.FC<KPIDetailModalProps> = ({ isOpen, onClose, catego
                 <div className="h-48 flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <Pie data={revenueByStream} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                            <Pie data={revenueByStream} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false}>
                                 {revenueByStream.map((entry, index) => (
                                     <Cell key={index} fill={entry.color} />
                                 ))}

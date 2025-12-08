@@ -8,8 +8,8 @@ interface WellDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     wellId: string;
-    wellName: string;
-    basinName: string;
+    wellName?: string;
+    basinName?: string;
 }
 
 // Mock production history data
@@ -56,7 +56,7 @@ const getEventTypeColor = (type: string) => {
     }
 };
 
-const WellDetailModal: React.FC<WellDetailModalProps> = ({ isOpen, onClose, wellId, wellName, basinName }) => {
+const WellDetailModal: React.FC<WellDetailModalProps> = ({ isOpen, onClose, wellId, wellName = 'Well Details', basinName = 'Basin' }) => {
     if (!isOpen) return null;
 
     const productionData = generateProductionHistory();
