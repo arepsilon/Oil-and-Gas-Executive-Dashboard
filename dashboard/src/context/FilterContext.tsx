@@ -20,7 +20,7 @@ interface FilterContextType {
 }
 
 const defaultFilters: FilterState = {
-    dateRange: 'mtd',
+    dateRange: 'ytd',
     basin: 'all',
     wellStatus: 'all',
     liftType: 'all',
