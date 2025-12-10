@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Circle as CircleIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import WellDetailModal from './WellDetailModal';
 import { useFilters, basinMap, statusMap, liftMap, operatorMap, commodityMap } from '@/context/FilterContext';
+import L from 'leaflet';
 
 // Dynamically import Leaflet components with SSR disabled
 const MapContainer = dynamic(
@@ -23,9 +24,53 @@ const Popup = dynamic(
     () => import('react-leaflet').then((mod) => mod.Popup),
     { ssr: false }
 );
+const Tooltip = dynamic(
+    () => import('react-leaflet').then((mod) => mod.Tooltip),
+    { ssr: false }
+);
+const ZoomControl = dynamic(
+    () => import('react-leaflet').then((mod) => mod.ZoomControl),
+    { ssr: false }
+);
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
+
+// Component to control map view based on filtered wells
+const MapController = dynamic(
+    () => Promise.resolve(({ wells }: { wells: Array<{ lat: number; lng: number }> }) => {
+        const { useMap } = require('react-leaflet');
+        const map = useMap();
+        const prevWellsRef = useRef<string>('');
+
+        useEffect(() => {
+            // Create a stable key from wells to detect actual changes
+            const wellsKey = wells.map(w => `${w.lat},${w.lng}`).sort().join('|');
+
+            // Only update if wells actually changed
+            if (wellsKey !== prevWellsRef.current && wells.length > 0) {
+                prevWellsRef.current = wellsKey;
+
+                const bounds = L.latLngBounds(wells.map(w => [w.lat, w.lng] as [number, number]));
+
+                // Add some padding to the bounds
+                map.fitBounds(bounds, {
+                    padding: [30, 30],
+                    maxZoom: 8,
+                    animate: true,
+                    duration: 0.5
+                });
+            } else if (wells.length === 0) {
+                // Reset to default US view if no wells
+                map.setView([39, -98], 4, { animate: true });
+                prevWellsRef.current = '';
+            }
+        }, [wells, map]);
+
+        return null;
+    }),
+    { ssr: false }
+);
 
 // Well data with lat/lng coordinates and ALL filter dimensions
 const allWells = [
@@ -111,9 +156,11 @@ const AssetMap = () => {
                             center={[39, -98]}
                             zoom={4}
                             style={{ height: '100%', width: '100%' }}
-                            scrollWheelZoom={false}
+                            scrollWheelZoom={true}
                             zoomControl={false}
                         >
+                            <ZoomControl position="bottomright" />
+                            <MapController wells={filteredWells} />
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
@@ -131,6 +178,9 @@ const AssetMap = () => {
                                         click: () => setSelectedWell(well.id),
                                     }}
                                 >
+                                    <Tooltip direction="top" offset={[0, -5]} opacity={0.95}>
+                                        <span className="text-xs font-medium">{well.name}</span>
+                                    </Tooltip>
                                     <Popup>
                                         <div className="text-xs min-w-[120px]">
                                             <div className="font-bold text-zinc-800 mb-1">{well.name}</div>
