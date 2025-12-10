@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FilterProvider } from "@/context/FilterContext";
 
+// Force dynamic rendering to avoid SSR issues with Recharts and Leaflet
+export const dynamic = 'force-dynamic';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

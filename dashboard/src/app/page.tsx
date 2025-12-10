@@ -1,3 +1,5 @@
+"use client";
+
 import HeaderSection from "@/components/HeaderSection";
 import ProductionOverview from "@/components/ProductionOverview";
 import FinancialPerformance from "@/components/FinancialPerformance";
